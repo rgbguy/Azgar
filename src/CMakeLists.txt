@@ -3,9 +3,11 @@ set (CMAKE_CXX_STANDARD 11)
 
 project(Azgar)
 
+include_directories(public)
+
 add_executable(${PROJECT_NAME}
-private/Main.cpp
-private/Shader.cpp)
+private/main.cpp
+private/shader.cpp)
 
 find_package(OpenGL REQUIRED)
 
@@ -17,7 +19,8 @@ target_include_directories(${PROJECT_NAME}
 PUBLIC ../ext/glfw/include
 PUBLIC ../ext/glad/include
 PUBLIC ../ext/glm/glm
-PUBLIC ../ext/loguru)
+PUBLIC ../ext/loguru
+PUBLIC public)
 
 target_link_directories(${PROJECT_NAME}
 PUBLIC ../ext/glfw/src
