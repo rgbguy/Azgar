@@ -1,1 +1,2 @@
+cd ..
 cd build; make

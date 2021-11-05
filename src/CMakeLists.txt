@@ -20,7 +20,8 @@ PUBLIC ../ext/glfw/include
 PUBLIC ../ext/glad/include
 PUBLIC ../ext/glm/glm
 PUBLIC ../ext/loguru
-PUBLIC public)
+PUBLIC public
+PUBLIC shaders)
 
 target_link_directories(${PROJECT_NAME}
 PUBLIC ../ext/glfw/src

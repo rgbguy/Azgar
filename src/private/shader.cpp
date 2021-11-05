@@ -17,10 +17,19 @@ unsigned int CompileShader(const char * source, GLenum shaderType)
     return shader;
 }
 
-unsigned int CreateShaderProgram(const char * VSsource, const char * FSsource)
+unsigned int CreateShaderProgram(const char * vsPath, const char * fsPath)
 {
-    unsigned int vertexShader = CompileShader(VSsource, GL_VERTEX_SHADER);
-    unsigned int fragmentShader = CompileShader(FSsource, GL_FRAGMENT_SHADER);
+
+    std::ifstream vsStream(vsPath);
+    std::string vs((std::istreambuf_iterator<char>(vsStream)),
+                     std::istreambuf_iterator<char>());
+
+    std::ifstream fsStream(fsPath);
+    std::string fs((std::istreambuf_iterator<char>(fsStream)),
+                     std::istreambuf_iterator<char>());
+
+    unsigned int vertexShader = CompileShader(vs.c_str(), GL_VERTEX_SHADER);
+    unsigned int fragmentShader = CompileShader(fs.c_str(), GL_FRAGMENT_SHADER);
 
     unsigned int shaderProgram = glCreateProgram();
     glAttachShader(shaderProgram, vertexShader);

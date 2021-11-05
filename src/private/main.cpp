@@ -12,24 +12,10 @@ void processInput(GLFWwindow *window);
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
-const char *vertexShaderSource = "#version 330 core\n"
-    "layout (location = 0) in vec3 aPos;\n"
-    "void main()\n"
-    "{\n"
-    "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-    "}\0";
-const char *fragmentShaderSource = "#version 330 core\n"
-    "out vec4 FragColor;\n"
-    "void main()\n"
-    "{\n"
-    "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-    "}\n\0";
-
 int main(int argc, char* argv[])
 {
-
-// Put every log message in "debug.log":
-loguru::add_file("debug.log", loguru::Append, loguru::Verbosity_MAX);
+    // Put every log message in "debug.log":
+    loguru::add_file("debug.log", loguru::Append, loguru::Verbosity_MAX);
 
     // glfw: initialize and configure
     // ------------------------------
@@ -62,7 +48,7 @@ loguru::add_file("debug.log", loguru::Append, loguru::Verbosity_MAX);
         return -1;
     }
 
-    unsigned int shaderProgram = CreateShaderProgram(vertexShaderSource, fragmentShaderSource);
+    unsigned int shaderProgram = CreateShaderProgram("shaders/shader.vert", "shaders/shader.frag");
 
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
