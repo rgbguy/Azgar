@@ -19,7 +19,6 @@ unsigned int CompileShader(const char * source, GLenum shaderType)
 
 unsigned int CreateShaderProgram(const char * vsPath, const char * fsPath)
 {
-
     std::ifstream vsStream(vsPath);
     std::string vs((std::istreambuf_iterator<char>(vsStream)),
                      std::istreambuf_iterator<char>());
