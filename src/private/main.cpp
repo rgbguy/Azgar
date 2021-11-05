@@ -6,8 +6,12 @@
 #include <loguru.cpp>
 #include "shader.h"
 
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 GLFWwindow* Init();
 
+int rightDir = 0;
+int upDir = 0;
+float speed = 0.01f;
 // settings
 const unsigned int SCR_WIDTH = 600;
 const unsigned int SCR_HEIGHT = 600;
@@ -15,6 +19,7 @@ const unsigned int SCR_HEIGHT = 600;
 int main(int argc, char* argv[])
 {
     GLFWwindow* window = Init();
+    glfwSetKeyCallback(window, key_callback);
 
     unsigned int shaderProgram = CreateShaderProgram("shaders/shader.vert", "shaders/shader.frag");
     glUseProgram(shaderProgram);
@@ -53,11 +58,10 @@ int main(int argc, char* argv[])
     // Send our transformation to the currently bound shader, in the "MVP" uniform
     // This is done in the main loop since each model will have a different MVP matrix (At least for the M part)
 
-    int dir = 1;
     // render loop
     while (!glfwWindowShouldClose(window))
     {
-        modelMat = glm::translate(modelMat, glm::vec3(dir*0.001f, 0.0f, 0.0f));
+        modelMat = glm::translate(modelMat, glm::vec3(rightDir*speed, upDir*speed, 0.0f));
         glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &modelMat[0][0]);
 
         // render
@@ -117,4 +121,32 @@ GLFWwindow* Init()
     }
     LOG_F(INFO, "OpenGL version is %s" , glGetString(GL_VERSION));
     return window;
+}
+
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+    if (key == GLFW_KEY_W && action == GLFW_PRESS)
+    {
+        std::cout << "W Pressed\n";
+        upDir = 1;
+        rightDir = 0;
+    }
+    if (key == GLFW_KEY_A && action == GLFW_PRESS)
+    {
+        std::cout << "A Pressed\n";
+        rightDir = -1;
+        upDir = 0;
+    }
+    if (key == GLFW_KEY_S && action == GLFW_PRESS)
+    {
+        std::cout << "S Pressed\n";
+        upDir = -1;
+        rightDir = 0;
+    }
+    if (key == GLFW_KEY_D && action == GLFW_PRESS)
+    {
+        std::cout << "D Pressed\n";
+        rightDir = 1;
+        upDir = 0;
+    }     
 }
