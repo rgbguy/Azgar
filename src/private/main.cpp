@@ -4,20 +4,56 @@
 #include <glm/gtx/transform.hpp>
 #include <iostream>
 #include <loguru.cpp>
+#include <vector>
 #include "shader.h"
+#include <thread> 
+
+void GameLoop(int x)
+{
+  
+}
+
+class SnakeBlock{
+public:
+    glm::vec2 pos;
+    int id;
+    SnakeBlock(int id_, glm::vec2 pos_)
+    {
+        id = id_;
+        pos = pos_;
+    }
+};
+
+void task1() { 
+    // do stuff
+}
+
+glm::vec2 SnakeHead;
+std::vector<SnakeBlock> SnakeBlocks;
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 GLFWwindow* Init();
 
 int rightDir = 0;
 int upDir = 0;
-float speed = 0.01f;
+float speed = 0.001f;
 // settings
 const unsigned int SCR_WIDTH = 600;
 const unsigned int SCR_HEIGHT = 600;
 
 int main(int argc, char* argv[])
 {
+    SnakeHead = glm::vec2(0.0f,0.0f);
+    for (int i = 0; i < 5; i++)
+    {
+        SnakeBlocks.push_back(SnakeBlock(i, float(i) * glm::vec2(-0.1f, 0.0f) + SnakeHead));
+    }
+    
+    for(auto it: SnakeBlocks)
+    {
+        std::cout << it.pos.x << "," << it.pos.y << "\n";
+    }
+
     GLFWwindow* window = Init();
     glfwSetKeyCallback(window, key_callback);
 
@@ -50,27 +86,33 @@ int main(int argc, char* argv[])
     glBindVertexArray(0);
 
 
-    glm::mat4 modelMat = glm::mat4(1.0f);
     // Get a handle for our "MVP" uniform
     // Only during the initialisation
     GLuint MatrixID = glGetUniformLocation(shaderProgram, "modelMat");
-  
+    float SnakeBlockID = glGetUniformLocation(shaderProgram, "SnakeBlockID");
+
     // Send our transformation to the currently bound shader, in the "MVP" uniform
     // This is done in the main loop since each model will have a different MVP matrix (At least for the M part)
 
     // render loop
     while (!glfwWindowShouldClose(window))
     {
-        modelMat = glm::translate(modelMat, glm::vec3(rightDir*speed, upDir*speed, 0.0f));
-        glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &modelMat[0][0]);
-
-        // render
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
+        for(auto it: SnakeBlocks)
+        {
+            // render
+            //modelMat = glm::translate(modelMat, glm::vec3(rightDir*speed, upDir*speed, 0.0f));
+            glm::mat4 modelMat = glm::mat4(1.0f);
+            modelMat = glm::translate(modelMat, glm::vec3(it.pos.x, it.pos.y, 0.0f));
+            glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &modelMat[0][0]);
+            glUniform1f(SnakeBlockID, float(it.id));
+            // draw our first triangle
+            glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
+            glDrawArrays(GL_TRIANGLES, 0, 6);
+        }
+        
 
-        // draw our first triangle
-        glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
-        glDrawArrays(GL_TRIANGLES, 0, 6);
         //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         // glBindVertexArray(0); // no need to unbind it every time 
  
