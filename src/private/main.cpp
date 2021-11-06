@@ -7,11 +7,8 @@
 #include <vector>
 #include "shader.h"
 #include <thread> 
-
-void GameLoop(int x)
-{
-  
-}
+#include <chrono>
+#include <ctime>
 
 class SnakeBlock{
 public:
@@ -23,10 +20,6 @@ public:
         pos = pos_;
     }
 };
-
-void task1() { 
-    // do stuff
-}
 
 glm::vec2 SnakeHead;
 std::vector<SnakeBlock> SnakeBlocks;
@@ -49,10 +42,7 @@ int main(int argc, char* argv[])
         SnakeBlocks.push_back(SnakeBlock(i, float(i) * glm::vec2(-0.1f, 0.0f) + SnakeHead));
     }
     
-    for(auto it: SnakeBlocks)
-    {
-        std::cout << it.pos.x << "," << it.pos.y << "\n";
-    }
+
 
     GLFWwindow* window = Init();
     glfwSetKeyCallback(window, key_callback);
@@ -91,32 +81,52 @@ int main(int argc, char* argv[])
     GLuint MatrixID = glGetUniformLocation(shaderProgram, "modelMat");
     float SnakeBlockID = glGetUniformLocation(shaderProgram, "SnakeBlockID");
 
+
+    glm::mat4 modelMat = glm::mat4(1.0f);
+    glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &modelMat[0][0]);
+
     // Send our transformation to the currently bound shader, in the "MVP" uniform
     // This is done in the main loop since each model will have a different MVP matrix (At least for the M part)
 
+
+    // Using time point and system_clock
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    start = std::chrono::system_clock::now();
+    
     // render loop
     while (!glfwWindowShouldClose(window))
     {
+            for(auto it: SnakeBlocks)
+    {
+        std::cout << "Block "<< it.id << ": " << it.pos.x << "," << it.pos.y << "\n";
+    }
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
-        for(auto it: SnakeBlocks)
-        {
-            // render
-            //modelMat = glm::translate(modelMat, glm::vec3(rightDir*speed, upDir*speed, 0.0f));
-            glm::mat4 modelMat = glm::mat4(1.0f);
-            modelMat = glm::translate(modelMat, glm::vec3(it.pos.x, it.pos.y, 0.0f));
-            glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &modelMat[0][0]);
-            glUniform1f(SnakeBlockID, float(it.id));
-            // draw our first triangle
-            glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
-            glDrawArrays(GL_TRIANGLES, 0, 6);
-        }
-        
 
-        //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-        // glBindVertexArray(0); // no need to unbind it every time 
- 
-        // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
+        end = std::chrono::system_clock::now();
+        std::chrono::duration<double> elapsed_seconds = end - start;        
+        if(elapsed_seconds.count() > 0.1f)
+        {
+            std::cout << "Reset!\n";
+            start = std::chrono::system_clock::now();
+            for(int i = 4; i > 0; i--)
+            {
+                SnakeBlocks[i].pos = SnakeBlocks[i-1].pos;
+            }
+            SnakeHead += glm::vec2(rightDir*0.1f, upDir*0.1f);
+
+            SnakeBlocks[0].pos = SnakeHead;
+        }
+
+        for(int i = 0; i < 5; i++)
+        {
+            modelMat = glm::translate(glm::mat4(1.0f), glm::vec3(SnakeBlocks[i].pos, 0.0f));
+            glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &modelMat[0][0]);
+            glUniform1f(SnakeBlockID, float(SnakeBlocks[i].id));
+            glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
+            glDrawArrays(GL_TRIANGLES, 0, 6); 
+        }
+  
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
@@ -190,5 +200,5 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
         std::cout << "D Pressed\n";
         rightDir = 1;
         upDir = 0;
-    }     
+    } 
 }
