@@ -21,12 +21,14 @@ public:
     }
 };
 
-glm::vec2 SnakeHead;
+glm::vec2 SnakeHead = glm::vec2(0.0f,0.0f);
 std::vector<SnakeBlock> SnakeBlocks;
 int numBlocks = 1;
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 GLFWwindow* Init();
+void DrawBlock(SnakeBlock block, unsigned int shaderProgram, unsigned int VAO);
+void UpdateSnakeBlocks();
 
 int rightDir = 0;
 int upDir = 0;
@@ -37,14 +39,6 @@ const unsigned int SCR_HEIGHT = 600;
 
 int main(int argc, char* argv[])
 {
-    SnakeHead = glm::vec2(0.0f,0.0f);
-    for (int i = 0; i < 5; i++)
-    {
-        
-    }
-    
-
-
     GLFWwindow* window = Init();
     glfwSetKeyCallback(window, key_callback);
 
@@ -76,16 +70,6 @@ int main(int argc, char* argv[])
     glBindBuffer(GL_ARRAY_BUFFER, 0); 
     glBindVertexArray(0);
 
-
-    // Get a handle for our "MVP" uniform
-    // Only during the initialisation
-    GLuint MatrixID = glGetUniformLocation(shaderProgram, "modelMat");
-    float SnakeBlockID = glGetUniformLocation(shaderProgram, "SnakeBlockID");
-
-
-    glm::mat4 modelMat = glm::mat4(1.0f);
-    glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &modelMat[0][0]);
-
     // Send our transformation to the currently bound shader, in the "MVP" uniform
     // This is done in the main loop since each model will have a different MVP matrix (At least for the M part)
 
@@ -97,10 +81,6 @@ int main(int argc, char* argv[])
     // render loop
     while (!glfwWindowShouldClose(window))
     {
-            for(auto it: SnakeBlocks)
-    {
-        //std::cout << "Block "<< it.id << ": " << it.pos.x << "," << it.pos.y << "\n";
-    }
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
@@ -108,33 +88,15 @@ int main(int argc, char* argv[])
         std::chrono::duration<double> elapsed_seconds = end - start;        
         if(elapsed_seconds.count() > 0.1f)
         {
-            std::cout << "Reset!\n";
             start = std::chrono::system_clock::now();
-
-            
-            for(int i = SnakeBlocks.size()-1; i > 0; i--)
-            {
-                SnakeBlocks[i].pos = SnakeBlocks[i-1].pos;
-            }
-            for (int i = 0; i < numBlocks - SnakeBlocks.size(); i++)
-            {
-                /* code */
-                SnakeBlocks.push_back(SnakeBlock(i, SnakeHead));
-            }
-            SnakeHead += glm::vec2(rightDir*0.1f, upDir*0.1f);
-
-            SnakeBlocks[0].pos = SnakeHead;
+            UpdateSnakeBlocks();
         }
 
         for(int i = 0; i < SnakeBlocks.size(); i++)
         {
-            modelMat = glm::translate(glm::mat4(1.0f), glm::vec3(SnakeBlocks[i].pos, 0.0f));
-            glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &modelMat[0][0]);
-            glUniform1f(SnakeBlockID, float(SnakeBlocks[i].id));
-            glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
-            glDrawArrays(GL_TRIANGLES, 0, 6); 
+            DrawBlock(SnakeBlocks[i], shaderProgram, VAO);
         }
-  
+
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
@@ -187,31 +149,55 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 {
     if (key == GLFW_KEY_W && action == GLFW_PRESS)
     {
-        std::cout << "W Pressed\n";
+        //std::cout << "W Pressed\n";
         upDir = 1;
         rightDir = 0;
     }
     if (key == GLFW_KEY_A && action == GLFW_PRESS)
     {
-        std::cout << "A Pressed\n";
+        //std::cout << "A Pressed\n";
         rightDir = -1;
         upDir = 0;
     }
     if (key == GLFW_KEY_S && action == GLFW_PRESS)
     {
-        std::cout << "S Pressed\n";
+        //std::cout << "S Pressed\n";
         upDir = -1;
         rightDir = 0;
     }
     if (key == GLFW_KEY_D && action == GLFW_PRESS)
     {
-        std::cout << "D Pressed\n";
+        //std::cout << "D Pressed\n";
         rightDir = 1;
         upDir = 0;
     }
     if (key == GLFW_KEY_P && action == GLFW_PRESS)
     {
-        std::cout << "P Pressed\n";
+        //std::cout << "P Pressed\n";
         numBlocks++;
     } 
+}
+
+void DrawBlock(SnakeBlock block, unsigned int shaderProgram, unsigned int VAO)
+{
+        glm::mat4 modelMat = glm::translate(glm::mat4(1.0f), glm::vec3(block.pos, 0.0f));
+        glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "modelMat"), 1, GL_FALSE, &modelMat[0][0]);
+        glUniform1f(glGetUniformLocation(shaderProgram, "SnakeBlockID"), float(block.id));
+        glUniform1f(glGetUniformLocation(shaderProgram, "numBlocks"), float(numBlocks));
+        glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
+        glDrawArrays(GL_TRIANGLES, 0, 6); 
+}
+
+void UpdateSnakeBlocks()
+{
+    for(int i = SnakeBlocks.size()-1; i > 0; i--)
+        {
+            SnakeBlocks[i].pos = SnakeBlocks[i-1].pos;
+        }
+        for (int i = 0; i < numBlocks - SnakeBlocks.size(); i++)
+        {
+            SnakeBlocks.push_back(SnakeBlock(numBlocks, SnakeHead));
+        }
+        SnakeHead += glm::vec2(rightDir*0.1f, upDir*0.1f);
+        SnakeBlocks[0].pos = SnakeHead;
 }
