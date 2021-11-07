@@ -23,6 +23,7 @@ public:
 
 glm::vec2 SnakeHead;
 std::vector<SnakeBlock> SnakeBlocks;
+int numBlocks = 1;
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 GLFWwindow* Init();
@@ -39,7 +40,7 @@ int main(int argc, char* argv[])
     SnakeHead = glm::vec2(0.0f,0.0f);
     for (int i = 0; i < 5; i++)
     {
-        SnakeBlocks.push_back(SnakeBlock(i, float(i) * glm::vec2(-0.1f, 0.0f) + SnakeHead));
+        
     }
     
 
@@ -98,7 +99,7 @@ int main(int argc, char* argv[])
     {
             for(auto it: SnakeBlocks)
     {
-        std::cout << "Block "<< it.id << ": " << it.pos.x << "," << it.pos.y << "\n";
+        //std::cout << "Block "<< it.id << ": " << it.pos.x << "," << it.pos.y << "\n";
     }
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
@@ -109,16 +110,23 @@ int main(int argc, char* argv[])
         {
             std::cout << "Reset!\n";
             start = std::chrono::system_clock::now();
-            for(int i = 4; i > 0; i--)
+
+            
+            for(int i = SnakeBlocks.size()-1; i > 0; i--)
             {
                 SnakeBlocks[i].pos = SnakeBlocks[i-1].pos;
+            }
+            for (int i = 0; i < numBlocks - SnakeBlocks.size(); i++)
+            {
+                /* code */
+                SnakeBlocks.push_back(SnakeBlock(i, SnakeHead));
             }
             SnakeHead += glm::vec2(rightDir*0.1f, upDir*0.1f);
 
             SnakeBlocks[0].pos = SnakeHead;
         }
 
-        for(int i = 0; i < 5; i++)
+        for(int i = 0; i < SnakeBlocks.size(); i++)
         {
             modelMat = glm::translate(glm::mat4(1.0f), glm::vec3(SnakeBlocks[i].pos, 0.0f));
             glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &modelMat[0][0]);
@@ -200,5 +208,10 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
         std::cout << "D Pressed\n";
         rightDir = 1;
         upDir = 0;
+    }
+    if (key == GLFW_KEY_P && action == GLFW_PRESS)
+    {
+        std::cout << "P Pressed\n";
+        numBlocks++;
     } 
 }
