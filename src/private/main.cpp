@@ -42,7 +42,7 @@ bool CheckGameOver();
 
 int rightDir = 0;
 int upDir = 0;
-float updateDuration = 0.1f;
+float updateDuration = 0.15f;
 float spawnDuration = 2.0f;
 // settings
 const unsigned int SCR_WIDTH = 600;
@@ -251,6 +251,11 @@ void UpdateFoodBlock()
 
 bool CheckGameOver()
 {
+    if(abs(SnakeHead.x) > 1.0f || abs(SnakeHead.y) > 1.0f)
+    {
+        std::cout << "GAME OVER! You crashed into the border!\n";
+        return true;
+    }
     for (int i = 1; i < SnakeBlocks.size(); i++)
     {
         if(glm::length(10.0f * (SnakeBlocks[i].pos - SnakeHead)) < 0.01f)
