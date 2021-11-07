@@ -38,6 +38,7 @@ void DrawSnakeBlock(Block block, unsigned int shaderProgram, unsigned int VAO);
 void UpdateSnakeBlocks();
 void DrawFoodBlock(unsigned int shaderProgram, unsigned int VAO);
 void UpdateFoodBlock();
+bool CheckGameOver();
 
 int rightDir = 0;
 int upDir = 0;
@@ -95,7 +96,11 @@ int main(int argc, char* argv[])
     {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
-
+        if(CheckGameOver())
+        {
+            glfwTerminate();
+            return 0;
+        }
         currentTime = std::chrono::system_clock::now();
         std::chrono::duration<double> resetElapsed = currentTime - resetTimer;        
         if(resetElapsed.count() > updateDuration)
@@ -242,4 +247,18 @@ void UpdateFoodBlock()
     int randNumY = rand()%(max-min + 1) + min;
    
     FoodBlock.pos = glm::vec2(randNumX*0.1f, randNumY*0.1f);
+}
+
+bool CheckGameOver()
+{
+    for (int i = 1; i < SnakeBlocks.size(); i++)
+    {
+        if(glm::length(10.0f * (SnakeBlocks[i].pos - SnakeHead)) < 0.01f)
+        {
+            std::cout << "GAME OVER! You ate yourself!\n";
+            return true;
+        }
+    }
+    return false;
+    
 }
