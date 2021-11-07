@@ -9,36 +9,49 @@
 #include <thread> 
 #include <chrono>
 #include <ctime>
+#include <random>
 
-class SnakeBlock{
+class Block{
 public:
     glm::vec2 pos;
     int id;
-    SnakeBlock(int id_, glm::vec2 pos_)
+    Block(int id_, glm::vec2 pos_)
     {
         id = id_;
         pos = pos_;
     }
+
+    Block()
+    {
+
+    }
 };
 
 glm::vec2 SnakeHead = glm::vec2(0.0f,0.0f);
-std::vector<SnakeBlock> SnakeBlocks;
+std::vector<Block> SnakeBlocks;
+Block FoodBlock;
 int numBlocks = 1;
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 GLFWwindow* Init();
-void DrawBlock(SnakeBlock block, unsigned int shaderProgram, unsigned int VAO);
+void DrawSnakeBlock(Block block, unsigned int shaderProgram, unsigned int VAO);
 void UpdateSnakeBlocks();
+void DrawFoodBlock(unsigned int shaderProgram, unsigned int VAO);
+void UpdateFoodBlock();
 
 int rightDir = 0;
 int upDir = 0;
-float speed = 0.001f;
+float updateDuration = 0.1f;
+float spawnDuration = 2.0f;
 // settings
 const unsigned int SCR_WIDTH = 600;
 const unsigned int SCR_HEIGHT = 600;
+std::chrono::time_point<std::chrono::system_clock> currentTime;
+
 
 int main(int argc, char* argv[])
 {
+    UpdateFoodBlock();
     GLFWwindow* window = Init();
     glfwSetKeyCallback(window, key_callback);
 
@@ -75,27 +88,37 @@ int main(int argc, char* argv[])
 
 
     // Using time point and system_clock
-    std::chrono::time_point<std::chrono::system_clock> start, end;
-    start = std::chrono::system_clock::now();
-    
+    std::chrono::time_point<std::chrono::system_clock> resetTimer = std::chrono::system_clock::now();
+
     // render loop
     while (!glfwWindowShouldClose(window))
     {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        end = std::chrono::system_clock::now();
-        std::chrono::duration<double> elapsed_seconds = end - start;        
-        if(elapsed_seconds.count() > 0.1f)
+        currentTime = std::chrono::system_clock::now();
+        std::chrono::duration<double> resetElapsed = currentTime - resetTimer;        
+        if(resetElapsed.count() > updateDuration)
         {
-            start = std::chrono::system_clock::now();
+            resetTimer = std::chrono::system_clock::now();
             UpdateSnakeBlocks();
         }
 
+        if(glm::length(10.0f * (FoodBlock.pos - SnakeHead)) < 0.0001f)
+        {
+            UpdateFoodBlock();
+            numBlocks++;
+            UpdateSnakeBlocks();
+            //std::cout << SnakeHead.x << "," << SnakeHead.y << " - " << FoodBlock.pos.x << "," << FoodBlock.pos.y << "\n";
+        }
+            //std::cout << glm::length(10.0f * (FoodBlock.pos - SnakeHead)) << "\n";
+
         for(int i = 0; i < SnakeBlocks.size(); i++)
         {
-            DrawBlock(SnakeBlocks[i], shaderProgram, VAO);
+
+            DrawSnakeBlock(SnakeBlocks[i], shaderProgram, VAO);
         }
+        DrawFoodBlock(shaderProgram, VAO);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -178,12 +201,21 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     } 
 }
 
-void DrawBlock(SnakeBlock block, unsigned int shaderProgram, unsigned int VAO)
+void DrawSnakeBlock(Block block, unsigned int shaderProgram, unsigned int VAO)
 {
         glm::mat4 modelMat = glm::translate(glm::mat4(1.0f), glm::vec3(block.pos, 0.0f));
         glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "modelMat"), 1, GL_FALSE, &modelMat[0][0]);
         glUniform1f(glGetUniformLocation(shaderProgram, "SnakeBlockID"), float(block.id));
         glUniform1f(glGetUniformLocation(shaderProgram, "numBlocks"), float(numBlocks));
+        glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
+        glDrawArrays(GL_TRIANGLES, 0, 6); 
+}
+//rand() / double(RAND_MAX)
+void DrawFoodBlock(unsigned int shaderProgram, unsigned int VAO)
+{
+        glm::mat4 modelMat = glm::translate(glm::mat4(1.0f), glm::vec3(FoodBlock.pos,0.0f));
+        glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "modelMat"), 1, GL_FALSE, &modelMat[0][0]);
+        glUniform1f(glGetUniformLocation(shaderProgram, "SnakeBlockID"), 0.0f);
         glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
         glDrawArrays(GL_TRIANGLES, 0, 6); 
 }
@@ -196,8 +228,18 @@ void UpdateSnakeBlocks()
         }
         for (int i = 0; i < numBlocks - SnakeBlocks.size(); i++)
         {
-            SnakeBlocks.push_back(SnakeBlock(numBlocks, SnakeHead));
+            SnakeBlocks.push_back(Block(numBlocks, SnakeHead));
         }
         SnakeHead += glm::vec2(rightDir*0.1f, upDir*0.1f);
         SnakeBlocks[0].pos = SnakeHead;
+}
+
+void UpdateFoodBlock()
+{
+    int max = 9;
+    int min = -9    ;
+    int randNumX = rand()%(max-min + 1) + min;
+    int randNumY = rand()%(max-min + 1) + min;
+   
+    FoodBlock.pos = glm::vec2(randNumX*0.1f, randNumY*0.1f);
 }
