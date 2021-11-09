@@ -175,25 +175,25 @@ GLFWwindow* Init()
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-    if (key == GLFW_KEY_W && action == GLFW_PRESS)
+    if (key == GLFW_KEY_W && action == GLFW_PRESS && upDir == 0)
     {
         //std::cout << "W Pressed\n";
         upDir = 1;
         rightDir = 0;
     }
-    if (key == GLFW_KEY_A && action == GLFW_PRESS)
+    if (key == GLFW_KEY_A && action == GLFW_PRESS && rightDir == 0)
     {
         //std::cout << "A Pressed\n";
         rightDir = -1;
         upDir = 0;
     }
-    if (key == GLFW_KEY_S && action == GLFW_PRESS)
+    if (key == GLFW_KEY_S && action == GLFW_PRESS && upDir == 0)
     {
         //std::cout << "S Pressed\n";
         upDir = -1;
         rightDir = 0;
     }
-    if (key == GLFW_KEY_D && action == GLFW_PRESS)
+    if (key == GLFW_KEY_D && action == GLFW_PRESS && rightDir == 0)
     {
         //std::cout << "D Pressed\n";
         rightDir = 1;
