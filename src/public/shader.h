@@ -8,6 +8,7 @@
 #include <streambuf>
 #include <sstream>
 
+
 enum ShaderType{
     vertexShader,
     fragmentShader
@@ -16,5 +17,14 @@ enum ShaderType{
 unsigned int CompileShader(const char * source, GLenum shaderType);
 
 unsigned int CreateShaderProgram(const char * vsPath, const char * fsPath);
+
+void GLClearError();
+
+bool GLLogCall(const char* function, const char* file, int line);
+
+#define ASSERT(x) if(!(x)) raise(SIGTRAP)
+#define GLCALL(x) GLClearError();\
+        x;\
+        ASSERT(GLLogCall(#x, __FILE__, __LINE__))
 
 #endif
