@@ -7,7 +7,10 @@ include_directories(public)
 
 add_executable(${PROJECT_NAME}
 private/main.cpp
-private/shader.cpp)
+private/shader.cpp
+private/renderer.cpp
+private/vertexbuffer.cpp
+private/indexbuffer.cpp)
 
 find_package(OpenGL REQUIRED)
 
