@@ -2,7 +2,7 @@
 
 int main(int argc, char* argv[])
 {
-    SnakeGame::RUN();
+    SnakeGame::RUN(argv[0]);
     getchar();
     return 0;
 }

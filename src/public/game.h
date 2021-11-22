@@ -52,12 +52,14 @@ void UpdateFoodBlock();
 bool CheckGameOver();
 void PrintArt();
 void PrintInstructions();
+bool is_file_exist(const char *fileName);
+std::string GetCurrentDirPath(const char * arg0);
 
 Snake Azgar;
 Block FoodBlock;
 GameState gameState;
 
-void RUN()
+void RUN(const char * arg0)
 {
     PrintArt();
     PrintInstructions();
@@ -65,7 +67,11 @@ void RUN()
     GLFWwindow* window = Init();
     glfwSetKeyCallback(window, key_callback);
 
-    unsigned int shaderProgram = CreateShaderProgram("shaders/shader.vert", "shaders/shader.frag");
+    std::string exepath = GetCurrentDirPath(arg0);
+    std::string vspath = exepath + "shaders/shader.vert";
+    std::string fspath = exepath + "shaders/shader.frag";
+
+    unsigned int shaderProgram = CreateShaderProgram(vspath.c_str(), fspath.c_str());
     glUseProgram(shaderProgram);
 
     float vertices[] = {
@@ -295,6 +301,29 @@ ____ ____ ___  ____ _  _ _   _
 void PrintInstructions()
 {
     std::cout << "INSTRUCTIONS:\n A-S-W-D to move.\n P to Pause\n Try not to die!\n";
+}
+
+bool is_file_exist(const char *fileName)
+{
+    std::ifstream infile(fileName);
+    return infile.good();
+}
+
+std::string GetCurrentDirPath(const char * arg0)
+{
+    char *resolved = realpath(arg0, NULL);
+    if (resolved != NULL) {
+        char *fname = strrchr(resolved, '/');
+        if (fname != NULL) {
+            fname[1] = '\0';
+        }
+        std::string path = std::string(resolved);
+        free(resolved);
+        return path;
+    } else {
+        perror("realpath");
+        return "";
+    }
 }
 }
 
