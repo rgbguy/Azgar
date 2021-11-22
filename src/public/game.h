@@ -25,12 +25,14 @@ public:
 
 class GameState{
 public:
-    const unsigned int SCR_WIDTH = 800;
-    const unsigned int SCR_HEIGHT = 800;
+    const unsigned int SCR_WIDTH = 500;
+    const unsigned int SCR_HEIGHT = 500;
 
     int rightDir = 0;
     int upDir = 0;
     float updateDuration = 0.15f;
+
+    std::chrono::time_point<std::chrono::system_clock> currentTime;
 };
 
 class Snake{
@@ -40,10 +42,6 @@ public:
     int numBlocks = 1;
 };
 
-Snake Azgar;
-Block FoodBlock;
-GameState gameState;
-
 GLFWwindow* Init();
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void DrawSnakeBlock(Block block, unsigned int shaderProgram, unsigned int VAO);
@@ -52,18 +50,15 @@ void DrawFoodBlock(unsigned int shaderProgram, unsigned int VAO);
 void UpdateFoodBlock();
 bool CheckGameOver();
 
-
-// settings
-
-std::chrono::time_point<std::chrono::system_clock> currentTime;
+Snake Azgar;
+Block FoodBlock;
+GameState gameState;
 
 void RUN()
 {
     UpdateFoodBlock();
     GLFWwindow* window = Init();
     glfwSetKeyCallback(window, key_callback);
-
-    static GameState State = GameState();
 
     unsigned int shaderProgram = CreateShaderProgram("shaders/shader.vert", "shaders/shader.frag");
     glUseProgram(shaderProgram);
@@ -108,8 +103,8 @@ void RUN()
             glfwTerminate();
             return;
         }
-        currentTime = std::chrono::system_clock::now();
-        std::chrono::duration<double> resetElapsed = currentTime - resetTimer;        
+        gameState.currentTime = std::chrono::system_clock::now();
+        std::chrono::duration<double> resetElapsed = gameState.currentTime - resetTimer;        
         if(resetElapsed.count() > gameState.updateDuration)
         {
             resetTimer = std::chrono::system_clock::now();
@@ -125,7 +120,6 @@ void RUN()
 
         for(int i = 0; i < Azgar.Blocks.size(); i++)
         {
-
             DrawSnakeBlock(Azgar.Blocks[i], shaderProgram, VAO);
         }
         DrawFoodBlock(shaderProgram, VAO);
@@ -155,10 +149,10 @@ GLFWwindow* Init()
 #endif
 
     // glfw window creation
-    GLFWwindow* window = glfwCreateWindow(600, 600, "AZGAR game by RGBGuy", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(gameState.SCR_WIDTH, gameState.SCR_HEIGHT, "AZGAR game by RGBGuy", NULL, NULL);
     if (window == NULL)
     {
-        std::cout << "Failed to create GLFW window" << std::endl;
+        LOG("Failed to create GLFW window\n", 0);
         glfwTerminate();
         return nullptr;
     }
@@ -167,7 +161,7 @@ GLFWwindow* Init()
     // glad: load all OpenGL function pointers
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
-        std::cout << "Failed to initialize GLAD" << std::endl;
+        LOG("Failed to initialize GLAD\n", 0);
     }
     return window;
 }
@@ -207,35 +201,37 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 void DrawSnakeBlock(Block block, unsigned int shaderProgram, unsigned int VAO)
 {
-        glm::mat4 modelMat = glm::translate(glm::mat4(1.0f), glm::vec3(block.pos, 0.0f));
-        glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "modelMat"), 1, GL_FALSE, &modelMat[0][0]);
-        glUniform1f(glGetUniformLocation(shaderProgram, "SnakeBlockID"), float(block.id));
-        glUniform1f(glGetUniformLocation(shaderProgram, "numBlocks"), float(Azgar.numBlocks));
-        glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
-        glDrawArrays(GL_TRIANGLES, 0, 6); 
+    glm::mat4 modelMat = glm::translate(glm::mat4(1.0f), glm::vec3(block.pos, 0.0f));
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "modelMat"), 1, GL_FALSE, &modelMat[0][0]);
+    glUniform1f(glGetUniformLocation(shaderProgram, "SnakeBlockID"), float(block.id));
+    glUniform1f(glGetUniformLocation(shaderProgram, "numBlocks"), float(Azgar.numBlocks));
+    glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
+    glDrawArrays(GL_TRIANGLES, 0, 6); 
 }
 
 void DrawFoodBlock(unsigned int shaderProgram, unsigned int VAO)
 {
-        glm::mat4 modelMat = glm::translate(glm::mat4(1.0f), glm::vec3(FoodBlock.pos,0.0f));
-        glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "modelMat"), 1, GL_FALSE, &modelMat[0][0]);
-        glUniform1f(glGetUniformLocation(shaderProgram, "SnakeBlockID"), 0.0f);
-        glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
-        glDrawArrays(GL_TRIANGLES, 0, 6); 
+    glm::mat4 modelMat = glm::translate(glm::mat4(1.0f), glm::vec3(FoodBlock.pos,0.0f));
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "modelMat"), 1, GL_FALSE, &modelMat[0][0]);
+    glUniform1f(glGetUniformLocation(shaderProgram, "SnakeBlockID"), 0.0f);
+    glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
+    glDrawArrays(GL_TRIANGLES, 0, 6); 
 }
 
 void UpdateSnakeBlocks()
 {
     for(int i = Azgar.Blocks.size()-1; i > 0; i--)
-        {
-            Azgar.Blocks[i].pos = Azgar.Blocks[i-1].pos;
-        }
-        for (int i = 0; i < Azgar.numBlocks - Azgar.Blocks.size(); i++)
-        {
-            Azgar.Blocks.push_back(Block(Azgar.numBlocks, Azgar.Head));
-        }
-        Azgar.Head += glm::vec2(gameState.rightDir*0.1f, gameState.upDir*0.1f);
-        Azgar.Blocks[0].pos = Azgar.Head;
+    {
+        Azgar.Blocks[i].pos = Azgar.Blocks[i-1].pos;
+    }
+
+    for (int i = 0; i < Azgar.numBlocks - Azgar.Blocks.size(); i++)
+    {
+        Azgar.Blocks.push_back(Block(Azgar.numBlocks, Azgar.Head));
+    }
+
+    Azgar.Head += glm::vec2(gameState.rightDir*0.1f, gameState.upDir*0.1f);
+    Azgar.Blocks[0].pos = Azgar.Head;
 }
 
 void UpdateFoodBlock()
@@ -264,6 +260,5 @@ bool CheckGameOver()
         }
     }
     return false;
-    
 }
 }
