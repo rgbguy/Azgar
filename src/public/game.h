@@ -27,6 +27,10 @@ class GameState{
 public:
     const unsigned int SCR_WIDTH = 800;
     const unsigned int SCR_HEIGHT = 800;
+
+    int rightDir = 0;
+    int upDir = 0;
+    float updateDuration = 0.15f;
 };
 
 class Snake{
@@ -38,19 +42,17 @@ public:
 
 Snake Azgar;
 Block FoodBlock;
+GameState gameState;
 
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 GLFWwindow* Init();
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void DrawSnakeBlock(Block block, unsigned int shaderProgram, unsigned int VAO);
 void UpdateSnakeBlocks();
 void DrawFoodBlock(unsigned int shaderProgram, unsigned int VAO);
 void UpdateFoodBlock();
 bool CheckGameOver();
 
-int rightDir = 0;
-int upDir = 0;
-float updateDuration = 0.15f;
-float spawnDuration = 2.0f;
+
 // settings
 
 std::chrono::time_point<std::chrono::system_clock> currentTime;
@@ -108,7 +110,7 @@ void RUN()
         }
         currentTime = std::chrono::system_clock::now();
         std::chrono::duration<double> resetElapsed = currentTime - resetTimer;        
-        if(resetElapsed.count() > updateDuration)
+        if(resetElapsed.count() > gameState.updateDuration)
         {
             resetTimer = std::chrono::system_clock::now();
             UpdateSnakeBlocks();
@@ -172,29 +174,29 @@ GLFWwindow* Init()
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-    if (key == GLFW_KEY_W && action == GLFW_PRESS && upDir == 0)
+    if (key == GLFW_KEY_W && action == GLFW_PRESS && gameState.upDir == 0)
     {
         LOG("W pressed", 1);
-        upDir = 1;
-        rightDir = 0;
+        gameState.upDir = 1;
+        gameState.rightDir = 0;
     }
-    if (key == GLFW_KEY_A && action == GLFW_PRESS && rightDir == 0)
+    if (key == GLFW_KEY_A && action == GLFW_PRESS && gameState.rightDir == 0)
     {
         LOG("A pressed", 1);
-        rightDir = -1;
-        upDir = 0;
+        gameState.rightDir = -1;
+        gameState.upDir = 0;
     }
-    if (key == GLFW_KEY_S && action == GLFW_PRESS && upDir == 0)
+    if (key == GLFW_KEY_S && action == GLFW_PRESS && gameState.upDir == 0)
     {
         LOG("S pressed", 1);
-        upDir = -1;
-        rightDir = 0;
+        gameState.upDir = -1;
+        gameState.rightDir = 0;
     }
-    if (key == GLFW_KEY_D && action == GLFW_PRESS && rightDir == 0)
+    if (key == GLFW_KEY_D && action == GLFW_PRESS && gameState.rightDir == 0)
     {
         LOG("D pressed", 1);
-        rightDir = 1;
-        upDir = 0;
+        gameState.rightDir = 1;
+        gameState.upDir = 0;
     }
     if (key == GLFW_KEY_P && action == GLFW_PRESS)
     {
@@ -232,7 +234,7 @@ void UpdateSnakeBlocks()
         {
             Azgar.Blocks.push_back(Block(Azgar.numBlocks, Azgar.Head));
         }
-        Azgar.Head += glm::vec2(rightDir*0.1f, upDir*0.1f);
+        Azgar.Head += glm::vec2(gameState.rightDir*0.1f, gameState.upDir*0.1f);
         Azgar.Blocks[0].pos = Azgar.Head;
 }
 
