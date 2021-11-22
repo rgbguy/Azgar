@@ -67,7 +67,11 @@ void RUN(const char * arg0)
     GLFWwindow* window = Init();
     glfwSetKeyCallback(window, key_callback);
 
+#ifdef __APPLE__
     std::string exepath = GetCurrentDirPath(arg0);
+#else
+    std::string exepath = "";
+#endif
     std::string vspath = exepath + "shaders/shader.vert";
     std::string fspath = exepath + "shaders/shader.frag";
 
