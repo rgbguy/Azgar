@@ -31,6 +31,7 @@ public:
     int rightDir = 0;
     int upDir = 0;
     float updateDuration = 0.15f;
+    bool paused = false;
 
     std::chrono::time_point<std::chrono::system_clock> currentTime;
 };
@@ -49,6 +50,7 @@ void UpdateSnakeBlocks();
 void DrawFoodBlock(unsigned int shaderProgram, unsigned int VAO);
 void UpdateFoodBlock();
 bool CheckGameOver();
+void PrintArt();
 
 Snake Azgar;
 Block FoodBlock;
@@ -56,6 +58,7 @@ GameState gameState;
 
 void RUN()
 {
+    PrintArt();
     UpdateFoodBlock();
     GLFWwindow* window = Init();
     glfwSetKeyCallback(window, key_callback);
@@ -97,9 +100,9 @@ void RUN()
         glClear(GL_COLOR_BUFFER_BIT);
         if(CheckGameOver())
         {
-            LOG("FINAL SCORE: ", 0);
+            LOG("---------------FINAL SCORE: ", 0);
             LOG(Azgar.numBlocks-1, 0);
-            LOG("\n", 0);
+            LOG("----------------\n", 0);
             glfwTerminate();
             return;
         }
@@ -108,14 +111,13 @@ void RUN()
         if(resetElapsed.count() > gameState.updateDuration)
         {
             resetTimer = std::chrono::system_clock::now();
-            UpdateSnakeBlocks();
+            if(!gameState.paused) UpdateSnakeBlocks();
         }
 
         if(glm::length(10.0f * (FoodBlock.pos - Azgar.Head)) < 0.0001f)
         {
             UpdateFoodBlock();
             Azgar.numBlocks++;
-            UpdateSnakeBlocks();
         }
 
         for(int i = 0; i < Azgar.Blocks.size(); i++)
@@ -195,7 +197,10 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     if (key == GLFW_KEY_P && action == GLFW_PRESS)
     {
         LOG("P pressed", 1);
-        Azgar.numBlocks++;
+        gameState.paused = !gameState.paused;
+        if(gameState.paused) { LOG("---------------GAME PAUSED-------------------\n", 0); }
+        else { LOG("---------------GAME UNPAUSED-----------------\n", 0); }
+
     } 
 }
 
@@ -248,17 +253,50 @@ bool CheckGameOver()
 {
     if(abs(Azgar.Head.x) > 1.0f || abs(Azgar.Head.y) > 1.0f)
     {
-        LOG("GAME OVER! You crashed into the border!\n", 0);
+        LOG("---------------***********-------------------\n", 0);
+        LOG("----GAME OVER! Crashed into the border!------\n", 0);
+        LOG("---------------***********-------------------\n", 0);
         return true;
     }
     for (int i = 1; i < Azgar.Blocks.size(); i++)
     {
         if(glm::length(10.0f * (Azgar.Blocks[i].pos - Azgar.Head)) < 0.01f)
         {
-            LOG("GAME OVER! You ate yourself!\n", 0);
+            LOG("---------------***********-------------------\n", 0);
+            LOG("--------GAME OVER! You ate yourself!---------\n", 0);
+            LOG("---------------***********-------------------\n", 0);
             return true;
         }
     }
     return false;
 }
+void PrintArt(){
+    std::cout << R"(
+
+  ___   ___________   ___  ______     
+ / _ \ |___  /  __ \ / _ \ | ___ \    
+/ /_\ \   / /| |  \// /_\ \| |_/ /    
+|  _  |  / / | | __ |  _  ||    /     
+| | | |./ /__| |_\ \| | | || |\ \     
+\_| |_/\_____/\____/\_| |_/\_| \_|    
+                                                                           
+ _                                    
+| |                                   
+| |__  _   _                          
+| '_ \| | | |                         
+| |_) | |_| |                         
+|_.__/ \__, |                         
+        __/ |                         
+       |___/                          
+______ _____ ______ _____ _   ___   __
+| ___ \  __ \| ___ \  __ \ | | \ \ / /
+| |_/ / |  \/| |_/ / |  \/ | | |\ V / 
+|    /| | __ | ___ \ | __| | | | \ /  
+| |\ \| |_\ \| |_/ / |_\ \ |_| | | |  
+\_| \_|\____/\____/ \____/\___/  \_/  
+                                             
+)" << '\n';
+
 }
+}
+
