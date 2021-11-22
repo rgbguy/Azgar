@@ -12,9 +12,8 @@
 
 namespace SnakeGame
 {
-
 #define DEBUG 0
-#define LOG(x) if(DEBUG) std::cout << x << "\n";
+#define LOG(x, level) if(DEBUG || !level) std::cout << x
 class Block{
 public:
     glm::vec2 pos;
@@ -87,7 +86,7 @@ void RUN()
     glBindVertexArray(0);
 
     std::chrono::time_point<std::chrono::system_clock> resetTimer = std::chrono::system_clock::now();
-
+    
     // render loop
     while (!glfwWindowShouldClose(window))
     {
@@ -95,6 +94,9 @@ void RUN()
         glClear(GL_COLOR_BUFFER_BIT);
         if(CheckGameOver())
         {
+            LOG("FINAL SCORE: ", 0);
+            LOG(numBlocks-1, 0);
+            LOG("\n", 0);
             glfwTerminate();
             return;
         }
@@ -166,31 +168,31 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 {
     if (key == GLFW_KEY_W && action == GLFW_PRESS && upDir == 0)
     {
-        LOG("W pressed");
+        LOG("W pressed", 1);
         upDir = 1;
         rightDir = 0;
     }
     if (key == GLFW_KEY_A && action == GLFW_PRESS && rightDir == 0)
     {
-        LOG("A pressed");
+        LOG("A pressed", 1);
         rightDir = -1;
         upDir = 0;
     }
     if (key == GLFW_KEY_S && action == GLFW_PRESS && upDir == 0)
     {
-        LOG("S pressed");
+        LOG("S pressed", 1);
         upDir = -1;
         rightDir = 0;
     }
     if (key == GLFW_KEY_D && action == GLFW_PRESS && rightDir == 0)
     {
-        LOG("D pressed");
+        LOG("D pressed", 1);
         rightDir = 1;
         upDir = 0;
     }
     if (key == GLFW_KEY_P && action == GLFW_PRESS)
     {
-        LOG("P pressed");
+        LOG("P pressed", 1);
         numBlocks++;
     } 
 }
@@ -242,14 +244,14 @@ bool CheckGameOver()
 {
     if(abs(SnakeHead.x) > 1.0f || abs(SnakeHead.y) > 1.0f)
     {
-        LOG("GAME OVER! You crashed into the border!");
+        LOG("GAME OVER! You crashed into the border!\n", 0);
         return true;
     }
     for (int i = 1; i < SnakeBlocks.size(); i++)
     {
         if(glm::length(10.0f * (SnakeBlocks[i].pos - SnakeHead)) < 0.01f)
         {
-            LOG("GAME OVER! You ate yourself!\n");
+            LOG("GAME OVER! You ate yourself!\n", 0);
             return true;
         }
     }
