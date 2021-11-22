@@ -10,10 +10,11 @@
 #include <ctime>
 #include <random>
 
-namespace SnakeGame
-{
 #define DEBUG 0
 #define LOG(x, level) if(DEBUG || !level) std::cout << x
+
+namespace SnakeGame
+{
 class Block{
 public:
     glm::vec2 pos;
@@ -28,10 +29,15 @@ public:
     const unsigned int SCR_HEIGHT = 800;
 };
 
-glm::vec2 SnakeHead = glm::vec2(0.0f,0.0f);
-std::vector<Block> SnakeBlocks;
+class Snake{
+public:
+    glm::vec2 Head = glm::vec2(0.0f,0.0f);
+    std::vector<Block> Blocks;
+    int numBlocks = 1;
+};
+
+Snake Azgar;
 Block FoodBlock;
-int numBlocks = 1;
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 GLFWwindow* Init();
@@ -95,7 +101,7 @@ void RUN()
         if(CheckGameOver())
         {
             LOG("FINAL SCORE: ", 0);
-            LOG(numBlocks-1, 0);
+            LOG(Azgar.numBlocks-1, 0);
             LOG("\n", 0);
             glfwTerminate();
             return;
@@ -108,17 +114,17 @@ void RUN()
             UpdateSnakeBlocks();
         }
 
-        if(glm::length(10.0f * (FoodBlock.pos - SnakeHead)) < 0.0001f)
+        if(glm::length(10.0f * (FoodBlock.pos - Azgar.Head)) < 0.0001f)
         {
             UpdateFoodBlock();
-            numBlocks++;
+            Azgar.numBlocks++;
             UpdateSnakeBlocks();
         }
 
-        for(int i = 0; i < SnakeBlocks.size(); i++)
+        for(int i = 0; i < Azgar.Blocks.size(); i++)
         {
 
-            DrawSnakeBlock(SnakeBlocks[i], shaderProgram, VAO);
+            DrawSnakeBlock(Azgar.Blocks[i], shaderProgram, VAO);
         }
         DrawFoodBlock(shaderProgram, VAO);
 
@@ -193,7 +199,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     if (key == GLFW_KEY_P && action == GLFW_PRESS)
     {
         LOG("P pressed", 1);
-        numBlocks++;
+        Azgar.numBlocks++;
     } 
 }
 
@@ -202,7 +208,7 @@ void DrawSnakeBlock(Block block, unsigned int shaderProgram, unsigned int VAO)
         glm::mat4 modelMat = glm::translate(glm::mat4(1.0f), glm::vec3(block.pos, 0.0f));
         glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "modelMat"), 1, GL_FALSE, &modelMat[0][0]);
         glUniform1f(glGetUniformLocation(shaderProgram, "SnakeBlockID"), float(block.id));
-        glUniform1f(glGetUniformLocation(shaderProgram, "numBlocks"), float(numBlocks));
+        glUniform1f(glGetUniformLocation(shaderProgram, "numBlocks"), float(Azgar.numBlocks));
         glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
         glDrawArrays(GL_TRIANGLES, 0, 6); 
 }
@@ -218,16 +224,16 @@ void DrawFoodBlock(unsigned int shaderProgram, unsigned int VAO)
 
 void UpdateSnakeBlocks()
 {
-    for(int i = SnakeBlocks.size()-1; i > 0; i--)
+    for(int i = Azgar.Blocks.size()-1; i > 0; i--)
         {
-            SnakeBlocks[i].pos = SnakeBlocks[i-1].pos;
+            Azgar.Blocks[i].pos = Azgar.Blocks[i-1].pos;
         }
-        for (int i = 0; i < numBlocks - SnakeBlocks.size(); i++)
+        for (int i = 0; i < Azgar.numBlocks - Azgar.Blocks.size(); i++)
         {
-            SnakeBlocks.push_back(Block(numBlocks, SnakeHead));
+            Azgar.Blocks.push_back(Block(Azgar.numBlocks, Azgar.Head));
         }
-        SnakeHead += glm::vec2(rightDir*0.1f, upDir*0.1f);
-        SnakeBlocks[0].pos = SnakeHead;
+        Azgar.Head += glm::vec2(rightDir*0.1f, upDir*0.1f);
+        Azgar.Blocks[0].pos = Azgar.Head;
 }
 
 void UpdateFoodBlock()
@@ -242,14 +248,14 @@ void UpdateFoodBlock()
 
 bool CheckGameOver()
 {
-    if(abs(SnakeHead.x) > 1.0f || abs(SnakeHead.y) > 1.0f)
+    if(abs(Azgar.Head.x) > 1.0f || abs(Azgar.Head.y) > 1.0f)
     {
         LOG("GAME OVER! You crashed into the border!\n", 0);
         return true;
     }
-    for (int i = 1; i < SnakeBlocks.size(); i++)
+    for (int i = 1; i < Azgar.Blocks.size(); i++)
     {
-        if(glm::length(10.0f * (SnakeBlocks[i].pos - SnakeHead)) < 0.01f)
+        if(glm::length(10.0f * (Azgar.Blocks[i].pos - Azgar.Head)) < 0.01f)
         {
             LOG("GAME OVER! You ate yourself!\n", 0);
             return true;
