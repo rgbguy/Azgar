@@ -51,6 +51,7 @@ void DrawFoodBlock(unsigned int shaderProgram, unsigned int VAO);
 void UpdateFoodBlock();
 bool CheckGameOver();
 void PrintArt();
+void PrintInstructions();
 
 Snake Azgar;
 Block FoodBlock;
@@ -59,6 +60,7 @@ GameState gameState;
 void RUN()
 {
     PrintArt();
+    PrintInstructions();
     UpdateFoodBlock();
     GLFWwindow* window = Init();
     glfwSetKeyCallback(window, key_callback);
@@ -273,30 +275,26 @@ bool CheckGameOver()
 void PrintArt(){
     std::cout << R"(
 
-  ___   ___________   ___  ______     
- / _ \ |___  /  __ \ / _ \ | ___ \    
-/ /_\ \   / /| |  \// /_\ \| |_/ /    
-|  _  |  / / | | __ |  _  ||    /     
-| | | |./ /__| |_\ \| | | || |\ \     
-\_| |_/\_____/\____/\_| |_/\_| \_|    
-                                                                           
- _                                    
-| |                                   
-| |__  _   _                          
-| '_ \| | | |                         
-| |_) | |_| |                         
-|_.__/ \__, |                         
-        __/ |                         
-       |___/                          
-______ _____ ______ _____ _   ___   __
-| ___ \  __ \| ___ \  __ \ | | \ \ / /
-| |_/ / |  \/| |_/ / |  \/ | | |\ V / 
-|    /| | __ | ___ \ | __| | | | \ /  
-| |\ \| |_\ \| |_/ / |_\ \ |_| | | |  
-\_| \_|\____/\____/ \____/\___/  \_/  
+____ ___  ____ ____ ____       
+|__|   /  | __ |__| |__/       
+|  |  /__ |__] |  | |  \       
+                               
+___  _   _                     
+|__]  \_/                      
+|__]   |                       
+                               
+____ ____ ___  ____ _  _ _   _ 
+|__/ | __ |__] | __ |  |  \_/  
+|  \ |__] |__] |__] |__|   |   
+                               
                                              
 )" << '\n';
 
+}
+
+void PrintInstructions()
+{
+    std::cout << "INSTRUCTIONS:\n A-S-W-D to move.\n P to Pause\n Try not to die!\n";
 }
 }
 

@@ -30,7 +30,9 @@ Open the sln file, and set AZGAR as default project. The RUN.
 How to play?
 ------------------
 
-Use A S W D keys to move the snake. Eat the blocks to grow the snake.
+Use A S W D keys to move the snake.
+Use P to pause/unpause the game.
+Eat the blocks to grow the snake.
 Avoid touching the borders and eating yourself, and try not to die!
 
 
