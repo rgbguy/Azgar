@@ -313,6 +313,7 @@ bool is_file_exist(const char *fileName)
     return infile.good();
 }
 
+#ifdef __APPLE__
 std::string GetCurrentDirPath(const char * arg0)
 {
     char *resolved = realpath(arg0, NULL);
@@ -329,5 +330,6 @@ std::string GetCurrentDirPath(const char * arg0)
         return "";
     }
 }
+#endif
 }
 
