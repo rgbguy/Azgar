@@ -3,7 +3,6 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 #include <iostream>
-#include <loguru.cpp>
 #include <vector>
 #include "shader.h"
 #include <thread> 
@@ -15,16 +14,14 @@ class Block{
 public:
     glm::vec2 pos;
     int id;
-    Block(int id_, glm::vec2 pos_)
-    {
-        id = id_;
-        pos = pos_;
-    }
+    Block(int id_, glm::vec2 pos_) : id(id_), pos(pos_){}
+    Block(){}
+};
 
-    Block()
-    {
-
-    }
+class GameState{
+public:
+    const unsigned int SCR_WIDTH = 800;
+    const unsigned int SCR_HEIGHT = 800;
 };
 
 glm::vec2 SnakeHead = glm::vec2(0.0f,0.0f);
@@ -45,8 +42,7 @@ int upDir = 0;
 float updateDuration = 0.15f;
 float spawnDuration = 2.0f;
 // settings
-const unsigned int SCR_WIDTH = 600;
-const unsigned int SCR_HEIGHT = 600;
+
 std::chrono::time_point<std::chrono::system_clock> currentTime;
 
 
@@ -55,6 +51,8 @@ int main(int argc, char* argv[])
     UpdateFoodBlock();
     GLFWwindow* window = Init();
     glfwSetKeyCallback(window, key_callback);
+
+    static GameState State = GameState();
 
     unsigned int shaderProgram = CreateShaderProgram("shaders/shader.vert", "shaders/shader.frag");
     glUseProgram(shaderProgram);
@@ -141,9 +139,6 @@ int main(int argc, char* argv[])
 
 GLFWwindow* Init()
 {
-    // Put every log message in "debug.log":
-    loguru::add_file("debug.log", loguru::Append, loguru::Verbosity_MAX);
-
     // glfw: initialize and configure
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -155,7 +150,7 @@ GLFWwindow* Init()
 #endif
 
     // glfw window creation
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "AZGAR game by RGBGuy", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(600, 600, "AZGAR game by RGBGuy", NULL, NULL);
     if (window == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -169,7 +164,6 @@ GLFWwindow* Init()
     {
         std::cout << "Failed to initialize GLAD" << std::endl;
     }
-    LOG_F(INFO, "OpenGL version is %s" , glGetString(GL_VERSION));
     return window;
 }
 
@@ -215,7 +209,7 @@ void DrawSnakeBlock(Block block, unsigned int shaderProgram, unsigned int VAO)
         glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
         glDrawArrays(GL_TRIANGLES, 0, 6); 
 }
-//rand() / double(RAND_MAX)
+
 void DrawFoodBlock(unsigned int shaderProgram, unsigned int VAO)
 {
         glm::mat4 modelMat = glm::translate(glm::mat4(1.0f), glm::vec3(FoodBlock.pos,0.0f));
