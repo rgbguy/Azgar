@@ -27,10 +27,11 @@ class GameState{
 public:
     const unsigned int SCR_WIDTH = 500;
     const unsigned int SCR_HEIGHT = 500;
+    const float MAX_UPDATE_DURATION = 0.1f;
 
     int rightDir = 0;
     int upDir = 0;
-    float updateDuration = 0.15f;
+    float updateDuration = 0.6f;
     bool paused = false;
 
     std::chrono::time_point<std::chrono::system_clock> currentTime;
@@ -66,6 +67,8 @@ void RUN(const char * arg0)
     UpdateFoodBlock();
     GLFWwindow* window = Init();
     glfwSetKeyCallback(window, key_callback);
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+
 
 #ifdef __APPLE__
     std::string exepath = GetCurrentDirPath(arg0);
@@ -212,7 +215,12 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
         gameState.paused = !gameState.paused;
         if(gameState.paused) { LOG("---------------GAME PAUSED-------------------\n", 0); }
         else { LOG("---------------GAME UNPAUSED-----------------\n", 0); }
-
+    } 
+    if (key == GLFW_KEY_G && action == GLFW_PRESS)
+    {
+        LOG("G pressed", 1);
+        gameState.updateDuration = 0.1f;
+        LOG("---------------GOD MODE ACTIVATED-------------------\n", 0);
     } 
 }
 
@@ -245,6 +253,8 @@ void UpdateSnakeBlocks()
     for (int i = 0; i < Azgar.numBlocks - Azgar.Blocks.size(); i++)
     {
         Azgar.Blocks.push_back(Block(Azgar.numBlocks, Azgar.Head));
+        if((gameState.updateDuration > gameState.MAX_UPDATE_DURATION))
+            gameState.updateDuration -= 0.04;
     }
 
     Azgar.Head += glm::vec2(gameState.rightDir*0.1f, gameState.upDir*0.1f);
@@ -304,7 +314,7 @@ ____ ____ ___  ____ _  _ _   _
 
 void PrintInstructions()
 {
-    std::cout << "INSTRUCTIONS:\n A-S-W-D to move.\n P to Pause\n Try not to die!\n";
+    std::cout << "INSTRUCTIONS:\n A-S-W-D to move.\n P to Pause\n Try not to die!\nPress G for SUPER SPEED\n";
 }
 
 bool is_file_exist(const char *fileName)
